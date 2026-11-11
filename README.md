@@ -15,5 +15,31 @@ PDF manipulation tools
 pip install pdfabric
 ```
 
+## Usage
+
+### Merge
+
+Combine every top-level PDF in a directory into a single output PDF:
+
+```
+pdfabric merge DIRECTORY
+```
+
+- The files in `DIRECTORY` are merged in alphabetical order by filename; subdirectories are not recursed into.
+- By default, the output is written next to `DIRECTORY`, named after it (e.g. merging `docs/invoices` writes `docs/invoices.pdf`).
+- One bookmark per source file is added to the output by default, pointing at the first page that file contributed.
+
+Options:
+
+- `-o, --output PATH` — write the merged PDF to `PATH` instead of the default location.
+- `-f, --force` — overwrite the output file if it already exists (by default the command refuses to overwrite an existing file).
+- `--bookmarks / --no-bookmarks` — enable (default) or disable the per-file bookmarks.
+
+Example:
+
+```
+pdfabric merge ./invoices -o ./merged-invoices.pdf
+```
+
 ## Contribute
 ...

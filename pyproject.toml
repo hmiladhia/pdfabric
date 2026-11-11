@@ -9,6 +9,11 @@ requires-python = ">=3.9"
 keywords = []
 readme = "README.md"
 dynamic = ['version']
+dependencies = [
+  "click",
+  "cryptography>=3.1",
+  "pypdf",
+]
 classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
@@ -23,6 +28,9 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/hmiladhia/pdfabric"
 Issues = "https://github.com/hmiladhia/pdfabric/issues"
+
+[project.scripts]
+pdfabric = "pdfabric.cli:main"
 
 [dependency-groups]
 dev = [{ include-group = "tests" }, { include-group = "workspace" }]
