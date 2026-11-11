@@ -1,0 +1,19 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v0.3.3
+_src_path: gh:hmiladhia/package-template
+distribution_name: pdfabric
+github_user: hmiladhia
+is_multi_package: false
+license: mit
+linting_level: 1
+package_name: pdfabric
+project_description: PDF manipulation tools
+project_name: pdfabric
+project_version: 0.0.1
+publish_condition: release
+use_commitizen: true
+use_mypy: false
+use_precommit: true
+use_tox: true
+user_email: ''
+user_name: Dhia Hmila
