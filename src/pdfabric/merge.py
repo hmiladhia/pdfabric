@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+import io
+import warnings
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
 from pypdf import PdfWriter
+
+from pdfabric.compress import (
+    RATIO_TOLERANCE,
+    CompressionRatioWarning,
+    _compress_bytes_to_ratio,
+)
 
 StrPath = Union[str, Path]
 
@@ -18,6 +26,7 @@ def merge_files(
     *,
     force: bool = False,
     add_bookmarks: bool = True,
+    compress: Optional[float] = None,
 ) -> None:
     output = Path(output)
     if output.exists() and not force:
@@ -31,6 +40,20 @@ def merge_files(
         if add_bookmarks:
             writer.add_outline_item(_format_bookmark_title(path.stem), first_page)
 
+    if compress is not None:
+        buffer = io.BytesIO()
+        writer.write(buffer)
+        result = _compress_bytes_to_ratio(buffer.getvalue(), compress)
+        if abs(result.achieved_ratio - compress) > RATIO_TOLERANCE:
+            warnings.warn(
+                f"Target ratio {compress:.2f} was not reached; "
+                f"achieved ratio is {result.achieved_ratio:.2f}",
+                CompressionRatioWarning,
+                stacklevel=2,
+            )
+        output.write_bytes(result.data)
+        return
+
     with output.open("wb") as stream:
         writer.write(stream)
 
@@ -41,6 +64,7 @@ def merge_directory(
     *,
     force: bool = False,
     add_bookmarks: bool = True,
+    compress: Optional[float] = None,
 ) -> Path:
     directory = Path(directory)
     if not directory.exists():
@@ -61,5 +85,11 @@ def merge_directory(
     else:
         resolved_output = directory.parent / f"{directory.name}.pdf"
 
-    merge_files(pdf_files, resolved_output, force=force, add_bookmarks=add_bookmarks)
+    merge_files(
+        pdf_files,
+        resolved_output,
+        force=force,
+        add_bookmarks=add_bookmarks,
+        compress=compress,
+    )
     return resolved_output

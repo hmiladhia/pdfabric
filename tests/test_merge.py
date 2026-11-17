@@ -1,8 +1,13 @@
+import io
+import random
+import warnings
 from pathlib import Path
 
 import pytest
+from PIL import Image
 from pypdf import PdfReader, PdfWriter
 
+from pdfabric.compress import CompressionRatioWarning
 from pdfabric.merge import _format_bookmark_title, merge_directory, merge_files
 
 
@@ -25,6 +30,48 @@ def _make_pdf(path: Path, num_pages: int, width: int = 100) -> Path:
     with path.open("wb") as stream:
         writer.write(stream)
     return path
+
+
+def _make_image_pdf(path: Path, size: tuple[int, int] = (64, 64)) -> Path:
+    rng = random.Random(0)  # noqa: S311 - test fixture pixel data, not security-sensitive
+    image = Image.new("RGB", size)
+    pixel_count = size[0] * size[1]
+    pixels = [
+        (rng.randint(0, 255), rng.randint(0, 255), rng.randint(0, 255))
+        for _ in range(pixel_count)
+    ]
+    image.putdata(pixels)
+    buffer = io.BytesIO()
+    image.save(buffer, "PDF", dpi=(150, 150))
+    buffer.seek(0)
+    writer = PdfWriter()
+    writer.append(buffer)
+    with path.open("wb") as stream:
+        writer.write(stream)
+    return path
+
+
+def test_merge_files_compress_shrinks_output(tmp_path: Path) -> None:
+    a = _make_image_pdf(tmp_path / "a.pdf")
+    uncompressed_output = tmp_path / "uncompressed.pdf"
+    compressed_output = tmp_path / "compressed.pdf"
+
+    merge_files([a], uncompressed_output)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", CompressionRatioWarning)
+        merge_files([a], compressed_output, compress=0.3)
+
+    assert compressed_output.stat().st_size < uncompressed_output.stat().st_size
+
+
+def test_merge_files_without_compress_is_unaffected(tmp_path: Path) -> None:
+    a = _make_image_pdf(tmp_path / "a.pdf")
+    output = tmp_path / "merged.pdf"
+
+    merge_files([a], output)
+
+    reader = PdfReader(output)
+    assert len(reader.pages) == 1
 
 
 def test_merge_files_page_ordering(tmp_path: Path) -> None:

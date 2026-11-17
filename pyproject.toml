@@ -12,6 +12,7 @@ dynamic = ['version']
 dependencies = [
   "click",
   "cryptography>=3.1",
+  "pillow",
   "pypdf",
 ]
 classifiers = [

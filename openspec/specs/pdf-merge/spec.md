@@ -70,7 +70,7 @@ The system SHALL, by default, add one bookmark (outline entry) per source file t
 - **THEN** underscores and hyphens in the stem are replaced with spaces and the result is title-cased, e.g. `invoice_report_2024.pdf` produces the bookmark title "Invoice Report 2024", and `01-cover-letter.pdf` produces "01 Cover Letter"
 
 ### Requirement: CLI command for directory merge
-The system SHALL expose the directory-merge capability as a `pdfabric merge DIRECTORY` command, with options controlling output path, overwrite, and bookmarks.
+The system SHALL expose the directory-merge capability as a `pdfabric merge DIRECTORY` command, with options controlling output path, overwrite, bookmarks, and post-merge compression.
 
 #### Scenario: Default invocation
 - **WHEN** a user runs `pdfabric merge DIRECTORY` with no other options
@@ -87,6 +87,14 @@ The system SHALL expose the directory-merge capability as a `pdfabric merge DIRE
 #### Scenario: Bookmarks disabled via CLI
 - **WHEN** a user runs `pdfabric merge DIRECTORY --no-bookmarks`
 - **THEN** the merged PDF is produced with no outline entries added by the merge
+
+#### Scenario: Post-merge compression via CLI
+- **WHEN** a user runs `pdfabric merge DIRECTORY --compress RATIO`
+- **THEN** the merged output is compressed to approximately `RATIO` of its pre-compression size, using the same target-ratio compression behavior as the `pdfabric compress` command, before being written to the output path
+
+#### Scenario: No post-merge compression by default
+- **WHEN** a user runs `pdfabric merge DIRECTORY` without `--compress`
+- **THEN** the merged output is written without any compression pass applied
 
 #### Scenario: Command reports errors clearly and exits non-zero
 - **WHEN** the underlying merge fails for any reason (invalid directory, no PDFs found, existing output without `--force`)
